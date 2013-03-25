@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<script src="js/audiolib.js"></script>
+		<script src="samples/drum-samples.js"></script>
+		<script src="samples/x-samples.js"></script>
+		<script>
+(function(){
+
+var	
+	sampler,
+	dev, sampleRate, sampler2;
+
+function audioProcess(buffer, channelCount){
+	var	l	= buffer.length,
+		i, n;
+	for (i=0; i<l; i+=channelCount){
+		// sampler.generate();
+		sampler2.generate();
+		for (n=0; n<channelCount; n++){
+			// buffer[n + i] = sampler.getMix(n);
+			buffer[n + i] = sampler2.getMix(n);
+		}
+	}
+}
+
+window.onload	= function(){
+	setTimeout(function(){
+		dev		= audioLib.AudioDevice(audioProcess, 2);
+
+		sampleRate	= dev.sampleRate;
+		sampler		= new audioLib.Sampler(sampleRate);
+		sampler.loadWav(atob(samples.hihat));
+
+		sampler2 = new audioLib.Sampler(sampleRate);
+		sampler2.loadWav(atob(ab));
+	}, 2000);
+};
+
+window.play	= function(frequency){
+	console.log(sampler2.noteOn(frequency));
+}
+
+}());
+
+		</script>
+	</head>
+	<body>
+		<label for="f">Frequency</label>
+		<input id="f" value="440">
+		<button onclick="play(document.getElementById('f').value)">Play</button>
+	</body>
+</html>
