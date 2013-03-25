@@ -7,6 +7,7 @@
 
     <script type="text/javascript" src="http://code.jquery.com/jquery-1.9.1.min.js"></script>
     <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.4.4/underscore-min.js"></script>
+    <script src="js/jquery.knob.js"></script>
 
     <script>
         var dev = Sink(),
@@ -68,15 +69,15 @@
         seq.tempo = 132;
         seq.length = 2;
 
-        window.onload = function(){
-            var canvas      = document.createElement('canvas'),
-            context     = canvas.getContext('2d'),
-            width       = canvas.width = 800,
-            height      = canvas.height = 600;
+        // window.onload = function(){
+        //     var canvas      = document.createElement('canvas'),
+        //     context     = canvas.getContext('2d'),
+        //     width       = canvas.width = 800,
+        //     height      = canvas.height = 600;
                     
-            canvas.width = width;
-            document.body.appendChild(canvas);  
-        }
+        //     canvas.width = width;
+        //     document.body.appendChild(canvas);  
+        // }
     </script>
 </head>
 <body>
@@ -242,6 +243,10 @@
             </td>           
         </tr>       
     </table>
+
+    <p style="color: white;">Tempo</p>
+    <input type="text" value="132" class="dial" >
+
     <script>
         var beats = [].slice.call(document.querySelectorAll('#beats tr.line td'));
 
@@ -308,30 +313,23 @@
             }
 
             $(".instrument").click(function(e){
-                // switch($(this).attr("data-channel")){
-                //     // case "1":
-                //     //     channels.activeChannelId = $(this).attr("data-channel");
-                //     //     // console.log("kik");
-                //     //     // selectedSample.sequence = _.clone(kickLocations);
-                //     //     // console.log(selectedSample.sequence);
-                //     //     // selectedSample.sample = kick;
-                //     // case "2":
-                //     //     // console.log("hatta");
-                //     //     // selectedSample.sequence = _.clone(hatLocations);
-                //     //     // selectedSample.sample = hat;
-                //     //     // console.log(selectedSample.sequence);
-                //     // case "3":
-                //     //     // selectedSample.sequence = _.clone(snareLocations);
-                //     //     // selectedSample.sample = snare;
-                //     // default:
-                //     //     break;
-                // }
                 $(".instrument.active").removeClass("active");
                 $(this).addClass("active");
                 channels.activeChannel = $(this).attr("data-channel");
                 console.log($(this).attr("data-channel"), channels.activeChannel);
 
                 updateSequencer();
+            });
+
+            $(".dial").knob({
+                "min":10,
+                "max":200,
+                "fgColor":"#b1dafc",
+                "skin":"tron",
+                "cursor":true,
+                change: function(v){
+                    seq.tempo = v;
+                }
             });
         });
     </script>
