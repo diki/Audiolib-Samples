@@ -5,8 +5,8 @@
     <script src="plugins/loop-sequencer.js"></script>
     <script src="samples/drum-samples.js"></script>
 
-    <script src="http://code.jquery.com/jquery-1.9.1.min.js"></script>7
-
+    <script type="text/javascript" src="http://code.jquery.com/jquery-1.9.1.min.js"></script>
+    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.4.4/underscore-min.js"></script>
 
     <script>
         var dev = Sink(),
@@ -20,9 +20,30 @@
         var snareLocations = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
         var hatLocations = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
 
-        var activeInstrument = {
+        // initialize channels
+        // default 3 channel, later more channels can be added
+        var channels = {
+            "activeChannel": 1,
+            "channel1": {
+                sequence: [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+                sample: kick,
+                id: 1
+            },
+            "channel2": {
+                sequence: [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+                sample: snare,
+                id: 2
+            },
+            "channel3": {
+                sequence: [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+                sample: hat,
+                id: 3
+            }
+        }
+
+        var selectedSample = {
             sequence: kickLocations,
-            instrument: kick
+            sample: kick
         };
 
         kick.loadWav(atob(samples.kick));
@@ -54,9 +75,7 @@
             height      = canvas.height = 600;
                     
             canvas.width = width;
-            document.body.appendChild(canvas);
-
-            
+            document.body.appendChild(canvas);  
         }
     </script>
 </head>
@@ -104,8 +123,24 @@
         tr.buttons td.active div{
             background: red;
         }
+
+        .instrument {
+            width: 180px;
+            text-align: center;
+            color: white;
+            background: #3ea2f8;
+            margin: 12px;
+        }
+
+        .instrument.active{
+            background: #ffb000;
+        }
     </style>
+        <div class="instrument active" data-type="kik" data-channel="1">Kiks</div>
+        <div class="instrument" data-type="hat" data-channel="2">Hats</div>
+        <div class="instrument" data-type="snare" data-channel="3">Snare</div>
     <table id="beats">
+
         <tr class="line">
             <td>
                 <div></div>
@@ -208,44 +243,95 @@
         </tr>       
     </table>
     <script>
-var beats = [].slice.call(document.querySelectorAll('#beats tr.line td'));
+        var beats = [].slice.call(document.querySelectorAll('#beats tr.line td'));
 
-function getBeat () {
-    var b = (seq.position - (dev.writePosition - dev.getPlaybackTime()) *
-        60 / seq.tempo / seq.sampleRate);
-    return b < 0 ? b + seq.length : b % seq.length;
-}
-
-setInterval(function () {
-    /* We multiply by four to get the index of the box we want to highlight. */
-    var index, i;
-    index = ~~(getBeat() * 8);
-
-    for (i=0; i<beats.length; i++) {
-        if (i === index) {
-            beats[i].classList.add('active');
-        } else {
-            beats[i].classList.remove('active');
+        function getBeat () {
+            var b = (seq.position - (dev.writePosition - dev.getPlaybackTime()) *
+                60 / seq.tempo / seq.sampleRate);
+            return b < 0 ? b + seq.length : b % seq.length;
         }
-    }
-}, 1000/60);
+
+        setInterval(function () {
+            /* We multiply by four to get the index of the box we want to highlight. */
+            var index, i;
+            index = ~~(getBeat() * 8);
+
+            for (i=0; i<beats.length; i++) {
+                if (i === index) {
+                    beats[i].classList.add('active');
+                } else {
+                    beats[i].classList.remove('active');
+                }
+            }
+        }, 1000/60);
     </script>
 
     <script type="text/javascript">
         $(document).ready(function(){
+
+
             $("tr.buttons td").click(function(){
+                var activeChannelId = channels.activeChannel;
+                var activeChannel = channels["channel"+activeChannelId];
                 var idx = $(this).attr("data-idx");
-                console.log(idx);
-                if(activeInstrument.sequence[idx]==0){
-                    activeInstrument.sequence[idx] = 1;
+
+                console.log(activeChannel);
+
+                if(!$(this).hasClass("active")){
+                    activeChannel.sequence[idx] = 1;
+                    console.log(activeChannel.sequence[idx])
                     $(this).addClass("active");
-                    seq.addEvent(activeInstrument.instrument, idx/8);
+                    seq.addEvent(activeChannel.sample, idx/8);
                 } else {
                     console.log("hehehehe", idx);
-                    activeInstrument.sequence[idx] = 0;
+                    activeChannel.sequence[idx] = 0;
                     $(this).removeClass("active");
                     seq.removeEvent(idx/8);
                 }
+            });
+
+            //fill sequencer buttons with with activeInstrument sequence array
+            function updateSequencer(){
+                var activeChannelId = channels.activeChannel;
+                var activeChannel = channels["channel"+activeChannelId];
+                console.log(activeChannel);                
+                _.each(activeChannel.sequence, function(val, idx){
+                    console.log(val,idx);
+                    if(val==1){
+                        console.log($("td[data-idx="+idx+"]"));
+                        $("td[data-idx="+idx+"]").addClass("active");
+                    } else {
+                        console.log($("td[data-idx="+idx+"]"));
+                        $("td[data-idx="+idx+"]").removeClass("active");
+                    }
+                });
+            }
+
+            $(".instrument").click(function(e){
+                // switch($(this).attr("data-channel")){
+                //     // case "1":
+                //     //     channels.activeChannelId = $(this).attr("data-channel");
+                //     //     // console.log("kik");
+                //     //     // selectedSample.sequence = _.clone(kickLocations);
+                //     //     // console.log(selectedSample.sequence);
+                //     //     // selectedSample.sample = kick;
+                //     // case "2":
+                //     //     // console.log("hatta");
+                //     //     // selectedSample.sequence = _.clone(hatLocations);
+                //     //     // selectedSample.sample = hat;
+                //     //     // console.log(selectedSample.sequence);
+                //     // case "3":
+                //     //     // selectedSample.sequence = _.clone(snareLocations);
+                //     //     // selectedSample.sample = snare;
+                //     // default:
+                //     //     break;
+                // }
+                $(".instrument.active").removeClass("active");
+                $(this).addClass("active");
+                channels.activeChannel = $(this).attr("data-channel");
+                console.log($(this).attr("data-channel"), channels.activeChannel);
+
+                updateSequencer();
             });
         });
     </script>
