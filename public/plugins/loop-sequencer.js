@@ -54,9 +54,10 @@ LoopSequencer.prototype = {
 	},
 
 	removeEvent: function (e) {
+		console.log(this.sequence);
 		var i;
 		for (i=0; i<this.sequence.length; i++) {
-			this.sequence[i] === e && this.sequence.splice(i--, 1);
+			this.sequence[i].t === e && this.sequence.splice(i--, 1);
 		}
 	},
 };
