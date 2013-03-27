@@ -6,6 +6,8 @@
     <script src="js/jquery-1.9.1.js"></script>
     <script src="js/jquery-ui-1.10.1.custom.js"></script>
 
+    <script src="js/audiolib.js"></script>
+
 </head>
 <body>
 
@@ -13,5 +15,22 @@
 
     <a href="/loop-sequencer.html">Loop Sequencer</a>
 
+    <script type="text/javascript" src="plugins/my-generator.js"></script>
+
+    <script type="text/javascript">
+        var dev, osc;
+
+        function audioCallback(buffer, channelCount){
+            // Fill the buffer with the oscillator output.
+            osc.append(buffer, channelCount);
+        }
+
+        window.addEventListener('load', function(){
+            // Create an instance of the AudioDevice class
+            dev = audioLib.AudioDevice(audioCallback /* callback for the buffer fills */, 2 /* channelCount */);
+            // Create an instance of the Oscillator class
+            osc = audioLib.Oscillator(dev.sampleRate /* sampleRate */, 440 /* frequency */);
+        }, true);
+    </script>
 </body>
 </html>

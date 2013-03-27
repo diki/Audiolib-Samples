@@ -17,6 +17,8 @@
             seq = audioLib.LoopSequencer(dev.sampleRate),
             rev = audioLib.Reverb(dev.sampleRate, dev.channelCount, 0.5, 0.99);
 
+        var rev1 = audioLib.Reverb.createBufferBased(dev.channelCount, dev.sampleRate, 0.5, 0.99);
+
         var kickLocations = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]; 
         var snareLocations = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
         var hatLocations = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
@@ -55,6 +57,13 @@
             return kick.getMix(ch) + snare.getMix(ch) + hat.getMix(ch);
         };
 
+        kick.generateBuffer(dev.sampleRate*8, 2);
+        var kickBuffer = kick.generatedBuffer;
+        // kick.addPreProcessing(function(){
+        //     //console.log("hehe");
+        //     kick.append(kickBuffer,2);
+        // });
+
         seq.ongenerate = function () {
             kick.generate();
             snare.generate();
@@ -63,7 +72,8 @@
 
         dev.on('audioprocess', function (buffer, channelCount) {
             seq.append(buffer, channelCount);
-            rev.append(buffer, channelCount);
+            rev1.append(buffer, channelCount);
+            //rev1.append(buffer, channelCount);
         });
 
         seq.tempo = 132;
