@@ -15,22 +15,46 @@
 
     <a href="/loop-sequencer.html">Loop Sequencer</a>
 
+
     <script type="text/javascript" src="plugins/my-generator.js"></script>
+    <script type="text/javascript" src="plugins/advanced-sampler.js"></script>
+    <script src="samples/drum-samples.js"></script>
+
+
 
     <script type="text/javascript">
-        var dev, osc;
+        var dev, osc,sampler;
 
-        function audioCallback(buffer, channelCount){
-            // Fill the buffer with the oscillator output.
-            osc.append(buffer, channelCount);
+        function audioCallback(buffer, channels){
+            var length = buffer.length,
+              index,
+              sample,
+              i;
+
+            for (index = 0; index < length; index += channels) {
+              //sample = 0;
+              // first, create a sample from the sampler
+              sampler.generate();
+              sample = sampler.getMix() * .6;
+
+              buffer[index] = sampler.getMix(0);
+              buffer[index + 1] = sampler.getMix(1);
+            }
         }
 
         window.addEventListener('load', function(){
             // Create an instance of the AudioDevice class
             dev = audioLib.AudioDevice(audioCallback /* callback for the buffer fills */, 2 /* channelCount */);
             // Create an instance of the Oscillator class
-            osc = audioLib.Oscillator(dev.sampleRate /* sampleRate */, 440 /* frequency */);
+            //osc = audioLib.MyOsc(dev.sampleRate /* sampleRate */, 440 /* frequency */);
+            //
+            sampler = audioLib.AdvancedSampler(dev.sampleRate);
+            var sample = atob(samples.kick);
+            sampler.sampler.loadWav(sample, true);
+
+            sampler.sampler.noteOn(440);
         }, true);
     </script>
+
 </body>
 </html>

@@ -4,9 +4,10 @@ function initPlugin(audioLib){
 
 (function(audioLib){
 
-function MyOsc (sampleRate) {
+function MyOsc (sampleRate, frequency) {
     this.sampleRate = isNaN(sampleRate) || sampleRate === null ? this.sampleRate : sampleRate;
-
+    this.frequency = isNaN(frequency) || frequency === null ? this.frequency : frequency;
+    
     for ( var prop in audioLib.generators.Oscillator.prototype) {
         this[prop] = audioLib.generators.Oscillator.prototype[prop];
     }
