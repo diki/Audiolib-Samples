@@ -2,24 +2,29 @@
 <html>
 <head>
     <script src="js/audiolib.js"></script>
+
+    <script type="text/javascript">
+    </script>
     <script src="plugins/loop-sequencer.js"></script>
+
+    <script src="plugins/advanced-sampler.js"></script>
     <script src="samples/drum-samples.js"></script>
 
     <script type="text/javascript" src="http://code.jquery.com/jquery-1.9.1.min.js"></script>
     <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.4.4/underscore-min.js"></script>
+    
     <script src="js/jquery.knob.js"></script>
 
     <script>
         var dev = Sink(),
-            kick    = audioLib.Sampler(dev.sampleRate),
-            snare   = audioLib.Sampler(dev.sampleRate),
-            hat = audioLib.Sampler(dev.sampleRate),
+            hat = new audioLib.AdvancedSampler(dev.sampleRate),
+            kick    = new audioLib.AdvancedSampler(dev.sampleRate),
+            snare   = new audioLib.AdvancedSampler(dev.sampleRate),
             seq = audioLib.LoopSequencer(dev.sampleRate),
             rev = audioLib.Reverb(dev.sampleRate, dev.channelCount, 0.5, 0.99);
 
-        var kickDelay = audioLib.Delay(dev.sampleRate, 0.00, 0.00);
-
-        var rev1 = audioLib.Reverb.createBufferBased(dev.channelCount, dev.sampleRate, 0.5, 0.99);
+        //var kickDelay = audioLib.Delay(dev.sampleRate, 0.00, 0.00);
+        // var kickReverb = 
 
         var kickLocations = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]; 
         var snareLocations = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
@@ -51,30 +56,52 @@
             sample: kick
         };
 
-        kick.loadWav(atob(samples.kick));
-        snare.loadWav(atob(samples.snare));
-        hat.loadWav(atob(samples.hihat));
+        kick.sampler.loadWav(atob(samples.kick));
+        snare.sampler.loadWav(atob(samples.snare));
+        hat.sampler.loadWav(atob(samples.hihat));
 
         seq.getMix = function (ch) {
-            return kick.getMix(ch) + snare.getMix(ch) + hat.getMix(ch);
+            return snare.getMix(ch) + hat.getMix(ch) + kick.getMix(ch);
         };
 
         seq.ongenerate = function () {
-
-            kick.generate();
-
-            var kickSample = kick.getMix();
-            kickDelay.pushSample(kickSample);
-            kickSample = kickDelay.getMix();
-
-            snare.generate();
             hat.generate();
+            kick.generate();
+            snare.generate();
         };
+
+        //var kickReverb = audioLib.Reverb(dev.sampleRate, 2, 0.00, 1.00, 0.00, .1);
+        //var kickReverb = audioLib.Reverb(dev.sampleRate, 2, 0, 0);
 
         dev.on('audioprocess', function (buffer, channelCount) {
             seq.append(buffer, channelCount);
-            rev1.append(buffer, channelCount);
-            //rev1.append(buffer, channelCount);
+
+            // kick.generate();
+            // //distortion.append(buffer, channelCount);
+            // //rev1.append(buffer, channelCount);
+            // // kick.append(buffer, channelCount);
+            // // distortion.pushSample(kick.getMix());
+            // var length = buffer.length,
+            //   index,
+            //   sample,
+            //   i;
+
+            // for (index = 0; index < length; index += channels) {
+            //     sample = 0;
+
+            //       // first, create a sample from the sampler
+            //     kick.generate();
+            //     sample = kick.getMix() * .6;
+
+            //     distortion.pushSample(sample);
+            //     sample = distortion.getMix();
+
+            //     // kickReverb.pushSample(sample, 0);
+            //     // kickReverb.pushSample(sample, 1);
+
+            //     // buffer[index] = kickReverb.getMix(0);
+            //     // buffer[index + 1] = kickReverb.getMix(1); 
+            // }
         });
 
         seq.tempo = 132;
@@ -147,8 +174,15 @@
         .instrument.active{
             background: #ffb000;
         }
+
+        .sample-bus-wrapper > *{
+            float: left;
+        }
     </style>
-        <div class="instrument active" data-type="kik" data-channel="1">Kiks</div>
+        <div class="sample-bus-wrapper">
+            <div class="instrument active" data-type="kik" data-channel="1">Kiks</div>
+            <input type="text" id="ch1DelayTime" class="ch1DelayTime" data-min="0" data-max="1" data-step="0.1">
+        </div>
         <div class="instrument" data-type="hat" data-channel="2">Hats</div>
         <div class="instrument" data-type="snare" data-channel="3">Snare</div>
     <table id="beats">
@@ -333,14 +367,18 @@
             });
 
             $(".dial").knob({
-                "min":10,
-                "max":200,
+                // "min":10,
+                // "max":200,
                 "fgColor":"#b1dafc",
                 "skin":"tron",
                 "cursor":true,
                 change: function(v){
                     seq.tempo = v;
                 }
+            });
+
+            $(".ch1DelayTime").knob({
+                step: 0.1
             });
         });
     </script>

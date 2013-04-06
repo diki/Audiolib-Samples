@@ -20,6 +20,7 @@ LoopSequencer.prototype = {
 	sequence: null,
 	
 	generate: function () {
+
 		var	lastPos	= this.position,
 			seq	= this.sequence,
 			pos, i, e;
@@ -30,6 +31,7 @@ LoopSequencer.prototype = {
 			e = seq[i];
 			if ((lastPos > pos && (e.t >= lastPos || pos > e.t)) || (lastPos <= e.t && pos > e.t)) {
 				e.c.call(this);
+				//distortion.append(e.s.generateBuffer());
 			}
 		}
 
@@ -43,9 +45,10 @@ LoopSequencer.prototype = {
 	addEvent: function (callback, time) {
 		var e = {
 			c: callback instanceof Function ? callback : function () {
-				callback.noteOn();
+				callback.sampler.noteOn();
 			},
 			t: time,
+			s: callback
 		};
 
 		this.sequence.push(e);
